@@ -9,7 +9,7 @@ Every row of the file contains following information about an object:
 - z coordinate,
 - speed,
 - rgb,
-- rotaion around z-axis angle
+- rotaion around z-axis angle (yaw for copter)
 
 ## How to use it
 Clone or download this repository
