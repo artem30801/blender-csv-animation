@@ -10,7 +10,7 @@ from bpy.props import StringProperty, BoolProperty, FloatProperty, IntProperty
 bl_info = {
     "name": "Export > CSV Drone Swarm Animation Exporter (.csv)",
     "author": "Artem Vasiunik",
-    "version": (0, 3, 0),
+    "version": (0, 3, 5),
     "blender": (2, 80, 0),
     #"api": 36079,
     "location": "File > Export > CSV Drone Swarm Animation Exporter (.csv)",
@@ -147,10 +147,20 @@ def create_folder_if_does_not_exist(folder_path):
 def get_rgb_from_object(obj):
     rgb = [0, 0, 0]
     try:
-        if len(obj.data.materials) >= 1:
-            material = obj.data.materials[0]
-            for component in range(3):
-                rgb[component] = int(material.diffuse_color[component] * 255)
+        if len(obj.material_slots) > 0:
+            for slot in obj.material_slots:
+                if "led_color" in slot.name.lower():
+                    if slot.material.use_nodes:
+                        for node in slot.material.node_tree.nodes:
+                            if node.type in ('EMISSION', 'BSDF_DIFFUSE'):
+                                alpha = node.inputs[0].default_value[3]
+                                for component in range(3):
+                                    rgb[component] = int(node.inputs[0].default_value[component] * alpha * 255)
+                    else:
+                        for component in range(3):
+                            rgb[component] = int(slot.material.diffuse_color[component] * 255)
+
+                    break
     except AttributeError:
         pass
     finally:
