@@ -96,6 +96,11 @@ class ExportCsv(Operator, ExportHelper):
                 distance_exeeded = False
 
                 prev_x, prev_y, prev_z = 0, 0, 0
+				
+				animation_file_writer.writerow([
+					"animation_id", bpy.path.basename(bpy.data.filepath)
+				])
+				
                 for frame_number in range(frame_start, frame_end + 1):
                     scene.frame_set(frame_number)
                     rgb = get_rgb_from_object(drone_obj)
@@ -130,6 +135,9 @@ class ExportCsv(Operator, ExportHelper):
                         round(rot_z, 5),
                         *rgb,
                     ])
+					
+				
+				
                 if speed_exeeded:
                     self.report({'WARNING'}, "Drone '%s' speed limits exeeded" % drone_obj.name)
                 if distance_exeeded:
