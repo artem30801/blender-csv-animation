@@ -1,5 +1,5 @@
 # blender-csv-animation
-A Blender extension that enables you to export your animation to a CSV file
+A Blender extension that export paths of objects in blender animation to a csv files
 
 ## CSV file format
 Every row of the file contains following information about an object:
@@ -8,7 +8,7 @@ Every row of the file contains following information about an object:
 - y coordinate,
 - z coordinate,
 - rotaion around z-axis angle (yaw for copter)
-- rgb,
+- rgb
 
 ## How to use it
 Clone or download this repository
