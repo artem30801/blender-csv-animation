@@ -10,7 +10,7 @@ from bpy.props import StringProperty, BoolProperty, FloatProperty, IntProperty
 bl_info = {
     "name": "Export > CSV Drone Swarm Animation Exporter (.csv)",
     "author": "Artem Vasiunik",
-    "version": (0, 3, 5),
+    "version": (0, 4, 0),
     "blender": (2, 80, 0),
     #"api": 36079,
     "location": "File > Export > CSV Drone Swarm Animation Exporter (.csv)",
