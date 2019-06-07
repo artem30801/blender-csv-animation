@@ -97,7 +97,7 @@ class ExportCsv(Operator, ExportHelper):
 
                 prev_x, prev_y, prev_z = 0, 0, 0
 				
-				animation_file_writer.writerow([
+                animation_file_writer.writerow([
 					"animation_id", bpy.path.basename(bpy.data.filepath)
 				])
 				
