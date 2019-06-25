@@ -6,7 +6,7 @@ from . operators.exporter import *
 bl_info = {
     "name": "Export > CSV Drone Swarm Animation Exporter (.csv)",
     "author": "Artem Vasiunik",
-    "version": (0, 4, 2),
+    "version": (0, 4, 3),
     "blender": (2, 80, 0),
     "location": "File > Export > CSV Drone Swarm Animation Exporter (.csv)",
     "description": "Export > CSV Drone Swarm Animation Exporter (.csv)",

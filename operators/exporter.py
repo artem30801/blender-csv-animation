@@ -1,4 +1,6 @@
 import os
+import sys
+
 import csv
 import json
 
@@ -16,10 +18,22 @@ class ExportCsv(Operator, ExportHelper):
     bl_label = "Export Drone Swarm animation"
     filename_ext = ''
     use_filter_folder = True
-
-    use_namefilter: bpy.props.BoolProperty(
-        name="Use name filter for objects",
-        default=True,
+    '''
+    
+        filter_obj: bpy.props.BoolProperty(
+            name="Use name filter for objects",
+            default=True,
+        )
+    '''
+    filter_obj: bpy.props.EnumProperty(
+        name="Filter objects:",
+        description="",
+        items=[('all', "No filter (all objects)", ""),
+               ('selected', "Only selected", ""),
+               ('name', "By object name", ""),
+               ('prop', "By object property", ""),
+               ],
+        default="name"
     )
 
     drones_name: bpy.props.StringProperty(
@@ -57,13 +71,36 @@ class ExportCsv(Operator, ExportHelper):
         default=""
     )
 
-    def get_drone_objects(self, context):
-        objects = context.visible_objects
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.label(text="Filtering properties")
+        col.prop(self, "filter_obj")
+        if self.filter_obj == "name":
+            col.prop(self, "drones_name")
+        col.separator()
 
-        if self.use_namefilter:
+        col = layout.column()
+        col.label(text="Limitation and warning properties")
+        col.prop(self, "show_warnings")
+        col.prop(self, "speed_warning_limit")
+        col.prop(self, "drone_distance_limit")
+        # TODO check button (operator)
+
+    def get_drone_objects(self, context):
+        if self.filter_obj == "all":
+            return context.visible_objects
+
+        if self.filter_obj == "selected":
+            return context.selected_objects
+
+        if self.filter_obj == "name":
+            objects = context.visible_objects
             return filter(lambda x: self.drones_name.lower() in x.name.lower(), objects)
-        else:
-            return objects
+
+        if self.filter_obj == "prop":
+            objects = context.visible_objects
+            return filter(lambda x: x.get("is_drone", False), objects)
 
     def execute(self, context):
         create_missing_dir(self.filepath)
@@ -75,8 +112,8 @@ class ExportCsv(Operator, ExportHelper):
 
         for drone_obj in drone_objects:
 
-            speed_exeeded = False
-            distance_exeeded = False
+            speed_exceeded = False
+            distance_exceeded = False
 
             context.scene.frame_set(frame_start)
             prev_point = get_position(drone_obj)
@@ -92,8 +129,8 @@ class ExportCsv(Operator, ExportHelper):
                 props = get_drone_properties(drone_obj)
 
                 speed = calc_speed(point, prev_point)
-                speed_exeeded += self.check_speed(drone_obj, speed, frame_num)
-                distance_exeeded += self.check_distances(drone_obj, drone_objects, frame_num)
+                speed_exceeded += self.check_speed(drone_obj, speed, frame_num)
+                distance_exceeded += self.check_distances(drone_obj, drone_objects, frame_num)
 
                 row = (
                     int(frame_num),
@@ -106,14 +143,15 @@ class ExportCsv(Operator, ExportHelper):
 
                 prev_point = point
 
-            if speed_exeeded:
+            if speed_exceeded:
                 self.report({'WARNING'}, "Drone '{}' speed limits exceeded".format(drone_obj.name))
-            if distance_exeeded:
+            if distance_exceeded:
                 self.report({'WARNING'}, "Drone '%s' distance limits exceeded".format(drone_obj.name))
 
             header = form_header({"name": drone_obj.name.lower(),
                                   "file": os.path.splitext(bpy.path.basename(bpy.data.filepath))[0],
                                   "fps": context.scene.render.fps,
+                                  "version": get_addon_version()
                                   })
 
             self.write_csv(anim_frames, header, drone_obj.name.lower())
@@ -122,7 +160,7 @@ class ExportCsv(Operator, ExportHelper):
 
         return {'FINISHED'}
 
-    def check_speed(self, drone_obj, speed, frame="Not specified"):
+    def check_speed(self, drone_obj, speed, frame="Not specified"):  # TODO extract from class, add decorator
         if speed > self.speed_warning_limit:
             if self.show_warnings:
                 self.report({'WARNING'},
@@ -224,7 +262,9 @@ def get_node_color(material):
         return node.inputs[0].default_value
 
 
-
+def get_addon_version():
+    mod = sys.modules["blender-csv-animation"]
+    return mod.bl_info.get('version', (-1, -1, -1))
 
 
 
