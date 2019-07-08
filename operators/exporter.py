@@ -96,11 +96,13 @@ class ExportCsv(Operator, ExportHelper):
 
         if self.filter_obj == "name":
             objects = context.visible_objects
-            return filter(lambda x: self.drones_name.lower() in x.name.lower(), objects)
+            return list(filter(lambda x: self.drones_name.lower() in x.name.lower(), objects))
 
         if self.filter_obj == "prop":
             objects = context.visible_objects
-            return filter(lambda x: x.get("is_drone", False), objects)
+            return list(filter(lambda x: x.get("is_drone", False), objects))
+
+        print("Invalid input")
 
     def execute(self, context):
         create_missing_dir(self.filepath)
@@ -146,12 +148,12 @@ class ExportCsv(Operator, ExportHelper):
             if speed_exceeded:
                 self.report({'WARNING'}, "Drone '{}' speed limits exceeded".format(drone_obj.name))
             if distance_exceeded:
-                self.report({'WARNING'}, "Drone '%s' distance limits exceeded".format(drone_obj.name))
+                self.report({'WARNING'}, "Drone '{}' distance limits exceeded".format(drone_obj.name))
 
             header = form_header({"name": drone_obj.name.lower(),
                                   "file": os.path.splitext(bpy.path.basename(bpy.data.filepath))[0],
                                   "fps": context.scene.render.fps,
-                                  "version": get_addon_version()
+                                  "version": get_addon_version(),
                                   })
 
             self.write_csv(anim_frames, header, drone_obj.name.lower())
@@ -166,7 +168,7 @@ class ExportCsv(Operator, ExportHelper):
                 self.report({'WARNING'},
                             "Speed of drone '{}' is greater than limit of {.3f} m/s ({.3f} m/s) on frame {}".format(
                                 drone_obj.name,
-                                round(self.speed_warning_limit, 5), round(speed, 5),
+                                self.speed_warning_limit, speed,
                                 frame,
                             ))
             return True
